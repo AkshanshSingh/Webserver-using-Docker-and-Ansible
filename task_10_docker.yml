@@ -1,0 +1,45 @@
+- hosts: all
+  tasks:
+  - name: "Docker repository Setup"
+    yum_repository:
+            name: Docker
+            description: Docker
+            baseurl: https://download.docker.com/linux/centos/7/x86_64/stable
+            gpgcheck: no
+  - name: "Docker installation"
+    command: "yum install docker-ce --nobest -y"
+
+  - name: "Start docker services"
+    service:
+            name: docker
+            state: started
+            enabled: yes
+        
+  - name: "Installing docker sdk for python3"
+    command: "pip3 install docker"
+
+  - name: "Download/pull docker httpd image from Docker Hub"
+    docker_image:
+            name: httpd
+            source: pull
+
+  - name: "Creating a Directory to mount"
+    file:
+            path: /root/attachment
+            state: directory
+
+  - name: "Copy HTML code to be displayed on the webserver in document root directory recently created"
+    copy:
+            dest: "/root/attachment/index2.html"
+            content: "This page is designed and developed by Akshansh Kumar Singh and the entire configuration is done using docker and ansible"
+
+  - name: "Setting up the Docker Container with httpd service"
+    docker_container:
+            name: webserver1
+            image: httpd
+            state: started
+            exposed_ports: "80"
+            ports: "8080:80"
+            volumes: /root/attachment:/usr/local/apache2/htdocs/
+
+
